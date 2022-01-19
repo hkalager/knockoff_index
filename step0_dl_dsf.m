@@ -37,8 +37,8 @@ catch
 end
 dbURL = 'jdbc:postgresql://wrds-pgdata.wharton.upenn.edu:9737/wrds?ssl=require&sslfactory=org.postgresql.ssl.NonValidatingFactory&';
 databasename = 'my_wrds';
-username = 'armanhs';
-password = 'HAJ@rm@n4421';
+username = 'YOUR_USERNAME_HERE';
+password = 'YOUR_PASSWORD_HERE';
 conn = database(databasename,username,password,driver,dbURL);
 
 gvkey_set=[3,5,8,156758]; % for S&P 500, DJ, NASDAQ, Russel 1000
