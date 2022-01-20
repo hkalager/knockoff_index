@@ -1,6 +1,6 @@
 # knockoff_index
 
-The scripts in this repository aim to generate a positive alpha by proposing an active portfolio strategy.
+The scripts in this repository aim to generate a positive alpha by proposing an active portfolio strategy. For more information regarding what you can expect from the codes and the performance, consider reading the Wiki tab.
 
 # Warning: 
 * All codes and analyses are subject to error.
