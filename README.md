@@ -3,6 +3,7 @@
 The scripts in this repository aim to generate a positive alpha by proposing an active portfolio strategy. For more information regarding what you can expect from the codes and the performance, consider reading the Wiki tab.
 
 # Warning: 
+* This strategy has a beta greater than 1 in all cases.
 * All codes and analyses are subject to error.
 * All investments are subject to risk. 
 * Past performance may not reflective of future gain/losses.
