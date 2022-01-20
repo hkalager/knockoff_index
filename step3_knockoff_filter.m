@@ -1,7 +1,7 @@
 clear;clc;warning off;
 init_knockoffs;
-IS_per=15;
-Benchmark='DJ';
+IS_per=10;
+Benchmark='Russel_1000';
 goal='rmse';
 L_cap_count=100; 
 results_table=table();
