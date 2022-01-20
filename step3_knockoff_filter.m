@@ -1,3 +1,27 @@
+%% Description
+% This script conducts the main analysis for evaluating the performance of
+% the knockoff portfolios (standard and reduced forms). The script requires
+% a training sample (in-sample) as previously constructed by running script
+% "step2_XX.m". 
+%% Inputs
+% – IS_per= the number of years used for the training/in-sample default is
+% 10
+% – Benchmark= the index under study e.g. "Russel_1000"; "DJ"; "NASDAQ"; or
+% "SP_500". Note: the labels used shall match the labels in script "step0_dl_dsf"
+% – oos_range= the out-of-sample trading period for evaluating the performance 
+
+%% Outputs
+
+% An .mat-file with necessary info about the training (IS) and testing
+% (OOS) datasets. The file is recorded as
+% "dataset_YYYY_IS_IS_per_Benchmark"
+
+%% Credits
+% Code developed by Arman Hassanniakalager GitHub @hkalager
+% Last reviewed 20 January 2022.
+
+%% Main codes
+
 clear;clc;warning off;
 init_knockoffs;
 IS_per=10;

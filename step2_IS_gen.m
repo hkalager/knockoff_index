@@ -19,19 +19,19 @@
 
 %% Credits
 % Code developed by Arman Hassanniakalager GitHub @hkalager
-% Last reviewed 14 January 2022.
+% Last reviewed 20 January 2022.
 
 %% Main codes
 
 clear;clc;warning off;
 IS_per=10;
-Benchmark='Russel_1000';
+Benchmark='SP_500';
 benchmark_fl_name=['Dataset_Daily_',Benchmark,'.csv'];
 benchmark_data=readtable(benchmark_fl_name);
 r_f_fl_name='Fed_Funds_FRB.csv';
 r_f_tbl=readtable(r_f_fl_name);
 r_f_tbl.Properties.VariableNames={'date','FF_O'};
-oos_range=2001:2020;
+oos_range=1996:2020;
 for yr=oos_range
     %% Generating IS data
     fprintf('Generating IS pool for %g ...\n',yr);
@@ -53,7 +53,7 @@ for yr=oos_range
         curr_date_list=IS_db.date_monday;
         for idx_asset=1:numel(stock_list_curr)
             selected_asset=stock_list_curr(idx_asset);
-            reg_ind_first=find(curr_tbl1.permno==selected_asset,1,'first');
+            reg_ind_first=find(curr_tbl1.permno==selected_asset,1,'last');
             reg_age=year(curr_tbl1.date(reg_ind_first))-year(curr_tbl1.begdat(reg_ind_first));
             missing_prc=all(~isnan(curr_prc_mat(idx_asset,:)));
             stock_list_curr(idx_asset,2)=reg_age;
