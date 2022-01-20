@@ -24,8 +24,8 @@
 %% Main codes
 
 clear;clc;warning off;
-IS_per=15;
-Benchmark='DJ';
+IS_per=10;
+Benchmark='Russel_1000';
 benchmark_fl_name=['Dataset_Daily_',Benchmark,'.csv'];
 benchmark_data=readtable(benchmark_fl_name);
 r_f_fl_name='Fed_Funds_FRB.csv';
