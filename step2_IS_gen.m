@@ -25,7 +25,7 @@
 
 clear;clc;warning off;
 IS_per=10;
-Benchmark='SP_500';
+Benchmark='DJ';
 benchmark_fl_name=['Dataset_Daily_',Benchmark,'.csv'];
 benchmark_data=readtable(benchmark_fl_name);
 r_f_fl_name='Fed_Funds_FRB.csv';
@@ -53,12 +53,12 @@ for yr=oos_range
         curr_date_list=IS_db.date_monday;
         for idx_asset=1:numel(stock_list_curr)
             selected_asset=stock_list_curr(idx_asset);
-            reg_ind_first=find(curr_tbl1.permno==selected_asset,1,'last');
+            reg_ind_first=find(curr_tbl1.permno==selected_asset,1,'first');
             reg_age=year(curr_tbl1.date(reg_ind_first))-year(curr_tbl1.begdat(reg_ind_first));
             missing_prc=all(~isnan(curr_prc_mat(idx_asset,:)));
             stock_list_curr(idx_asset,2)=reg_age;
             stock_list_curr(idx_asset,3)=missing_prc;
-            asset_info{idx_asset,'cap'}=curr_tbl1.cap(reg_ind_first);
+            asset_info{idx_asset,'cap'}=mean(curr_tbl1.cap(reg_ind_first));
             %asset_info{idx_asset,'ticker'}=curr_tbl1.htsymbol(reg_ind_first);
             asset_info{idx_asset,'full_name'}=curr_tbl1.hcomnam(reg_ind_first);
             asset_info{idx_asset,'Beg_Dat'}=curr_tbl1.begdat(reg_ind_first);

@@ -1,10 +1,20 @@
 %% Read Me
+% This script downloads the necessary data files from Compustat and CRSP.
+
+%% Note on CRSP Daily Stock File
 % This code is downloading daily price from the Daily Stock File (DSF) in 
 % Centre for Research in Security Price (CRSP) for >7000 securities from 
 % 1981 to one year before date. In this script, I use the CRSP dataset with
 % annual updates added every February. An alternative to acquire more 
 % recent data is using "crsp_m_stock" table with monthly updates updated
 % 12th business day of each month.
+
+%% Note on Fundamentals from Compustat CRSP merged data by WRDS
+% This code is downloading fundamentals from annual financial statements
+% from Compustat "funda" file. Only stocks listed wiht exchange codes 11,
+% 12, and 14 are considered. Only domestic stocks are considere "popsrc=D".
+% All records with missing gross profit or total assets are discarded.
+% Records with a negative book value per share are discarded.
 
 %% Note on indexes
 % The indexes used in this script are obtained from Compustat on WRDS.
@@ -26,7 +36,7 @@
 
 % Code developed by Arman Hassanniakalager GitHub @hkalager
 % Created 26-Oct-2019 
-% Last reviewed 04-Jan-2022 
+% Last reviewed 24-Jan-2022 
 
 %% Make connection to database
 try
@@ -37,14 +47,14 @@ catch
 end
 dbURL = 'jdbc:postgresql://wrds-pgdata.wharton.upenn.edu:9737/wrds?ssl=require&sslfactory=org.postgresql.ssl.NonValidatingFactory&';
 databasename = 'my_wrds';
-username = 'YOUR_USERNAME_HERE';
-password = 'YOUR_PASSWORD_HERE';
+username = 'YOUR_USERNAME';
+password = 'YOUR_PASSWORD';
 conn = database(databasename,username,password,driver,dbURL);
 
-gvkey_set=[3,5,8,156758]; % for S&P 500, DJ, NASDAQ, Russel 1000
+%% DSF file retrieval
 
 for yr=1985:year(now)-1
-    %% Execute query and fetch results
+    % Execute query and fetch results
     if ~exist(['dataset_',num2str(yr),'.csv'],'file')
         disp(['Daily stock file downloading for year ',num2str(yr)])
         tic;
@@ -72,6 +82,9 @@ for yr=1985:year(now)-1
     end
        
 end
+
+%%  Get US indexes from Compustat 
+gvkey_set=[3,5,8,156758]; % for S&P 500, DJ, NASDAQ, Russel 1000
 
 for gv_code=gvkey_set
     if log10(gv_code)<1
@@ -105,7 +118,7 @@ for gv_code=gvkey_set
         'WHERE idx_daily.gvkeyx =', str_gv,''' ' ...
         'ORDER BY idx_daily.datadate ASC'];
 
-%% Execute query and fetch results
+% Execute query and fetch results
     index_data = fetch(conn,query);
     switch gv_code
         case 3
@@ -139,6 +152,78 @@ idx_data = fetch(conn,idx_query);
 writetable(idx_data,'index_list.csv');
 disp('Data collected successfully for index list');
 
+%% Get CUSIP info 
+if ~exist('hdr_dsf.csv','file')
+    hdr_query = ['SELECT * ' ...
+    'FROM wrds.crsp.dsfhdr'];
+    hdr_data = fetch(conn,hdr_query);
+    writetable(hdr_data,'hdr_dsf.csv');
+    disp('CUSIP data collected successfully');
+    % Execute query and fetch results
+    hdr_data = fetch(conn,hdr_query);
+    writetable(hdr_data,'dsf_hdr.csv');
+else
+    disp('Data file already exists for DSF header');
+end
+
+
+
+%% Compustat fundamentals
+
+if ~exist('funda.csv','file')
+    funda_query = ['SELECT cusip, ' ...
+    '	gvkey, ' ...
+    '	indfmt, ' ...
+    '	datafmt, ' ...
+    '	popsrc, ' ...
+    '	acctstd, ' ...
+    '	exchg, ' ...
+    '	conm, ' ...
+    '	datadate, ' ...
+    '	final, ' ...
+    '	fyear, ' ...
+    '	act, ' ... % Current Assets - Total
+    '	at, ' ... % Assets - Total
+    '	bkvlps, ' ... % Book Value Per Share
+    '	capx, ' ... % Capital Expenditures
+    '	che, ' ... % Cash and Short-Term Investments
+    '	csho, ' ... % Common Shares Outstanding
+    '	cshtr_f, ' ... % Common Shares Traded - Annual - Fiscal
+    '	dvt, ' ... % Dividends - Total
+    '	ebit, ' ... % Earnings Before Interest and Taxes
+    '	ebitda, ' ... % Earnings Before Interest, Taxes, Depreciation and Amortization
+    '	emp, ' ... % Employees
+    '	epspx, ' ... % Earnings Per Share (Basic) - Excluding Extraordinary Items
+    '	gp, ' ... % Gross Profit (Loss)
+    '	ib, ' ... % Income Before Extraordinary Items
+    '	ni, ' ... % Net Income (Loss)
+    '	prcc_f, ' ... % Price Close - Annual - Fiscal
+    '	re, ' ... % Retained Earnings
+    '	rect, ' ... % Receivables - Total
+    '	revt, ' ... % Revenue - Total
+    '   sale, '... % Sales/Turnover (Net)
+    '	txt ' ... % Income Taxes - Total
+    'FROM wrds.comp_na_daily_all.funda ' ...
+    'WHERE fyear >= 1980 ' ...
+    '	AND final = ''Y'' ' ...
+    '	AND exchg >= 11 ' ... % New York Stock Exchange (11);
+    '	AND exchg <= 14 ' ... % NYSE American(12); Nasdaq Stock Market (14)
+    '	AND exchg != 13 ' ... % NOT OTC Bulletin Board
+    '	AND gp != ''NaN'' ' ...
+    '	AND at != ''NaN'' ' ...
+    '	AND popsrc = ''D'' ' ...
+    '	AND prcc_f != ''NaN'' ' ...
+    '   AND bkvlps >= 0 ' ...
+    'ORDER BY fyear ASC'];
+
+    funda_data = fetch(conn,funda_query);
+    funda_data.mkvalt=funda_data.csho.*funda_data.prcc_f;
+
+    writetable(funda_data,'funda.csv');
+    disp('Fundamentals data collected successfully');
+else
+    disp('Fundamentals data exist already');
+end
 
 %% Get FRB federal funds rate – latest updated record on WRDS March 2020
 
@@ -152,6 +237,3 @@ disp('Data collected successfully for index list');
 % disp('Data collected successfully for FRB rate');
 %% Close connection to database
 close(conn)
-
-%% Clear variables
-clear conn

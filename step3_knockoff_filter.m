@@ -25,13 +25,13 @@
 clear;clc;warning off;
 init_knockoffs;
 IS_per=10;
-Benchmark='Russel_1000';
+Benchmark='SP_500';
 goal='rmse';
 L_cap_count=100; 
 results_table=table();
 port0_knockoff=[];
 port0_reduced=[];
-yr_rng=2001:2020;
+yr_rng=1996:2020;
 for yr=yr_rng
     tic;
     load(['dataset_',num2str(yr),'_IS_',num2str(IS_per),'_',Benchmark]);
