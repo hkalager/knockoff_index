@@ -16,13 +16,13 @@ function err_val=error_fun(varargin)
     end
     switch model_type
         case 'rmse'
-            err_val=(mean((x*w'-y).^2))^.5;
+            err_val=(mean((x*w'-y).^2,'omitnan'))^.5;
         case 'mae'
-            err_val=mean(abs(x*w'-y));
+            err_val=mean(abs(x*w'-y),'omitnan');
         case 'ret'
-            err_val=-mean(x*w');
+            err_val=-mean(x*w','omitnan');
         case 'sharpe'
-            err_val=-(mean(x*w')/(var_p^.5));
+            err_val=-(mean(x*w','omitnan')/(var_p^.5));
         case 'var'
             err_val=(var_p)^.5;
     end
