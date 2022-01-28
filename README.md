@@ -19,6 +19,8 @@ In order to replicate the results you need to run the m files in MATLAB. The ste
 
 – The daily stock data used in this study is from CRSP on WRDS. Once you acquire the account from WRDS you need to enter your username and password into the script "step0_dl_dsf.m" to start collecting the data. 
 
+– The annual fundamentals are from merged Compustat/CRSP file on WRDS. 
+
 – The daily stock indexes closing prices are from Compustat on WRDS. 
 
 – The federal funds rate is from Federal Reserve Board’s H.15 release that contains selected interest rates for U.S. Treasuries and private money market and capital market instruments. All rates are reported in annual terms. Daily figures are for Business days and Monthly figures are averages of Business days unless otherwise noted. The cvs file "Fed_Funds_FRB.csv" contains these rates and is obtained from  https://fred.stlouisfed.org/series/FEDFUNDS
