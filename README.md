@@ -1,15 +1,15 @@
 # knockoff_index
 
-The scripts in this repository aim to generate a positive alpha by proposing an active portfolio strategy. For more information regarding what you can expect from the codes and the performance, consider reading the Wiki tab.
+The scripts in this repository aim to generate a positive alpha by proposing an active portfolio strategy. For a thorough introduction see the Wiki tab.
 
 # Warning: 
 * This strategy has a beta greater than 1 in all cases.
 * All codes and analyses are subject to error.
 * All investments are subject to risk. 
 * Past performance may not reflective of future gain/losses.
-* Provision of the codes is not a financial advice.
+* Provision of the codes and portfolios is not a financial advice.
 
-For any enquiries please get in touch via hassannia@outlook.com 
+For enquiries and commercial use, please get in touch via hassannia@outlook.com 
 
 # Replication:
 
