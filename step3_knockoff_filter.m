@@ -2,13 +2,13 @@
 % This script conducts the main analysis for evaluating the performance of
 % the knockoff portfolios (standard and reduced forms). The script requires
 % a training sample (in-sample) as previously constructed by running script
-% "step2_XX.m". 
+% "step2_XX.m".
 %% Inputs
 % – IS_per= the number of years used for the training/in-sample default is
 % 10
 % – Benchmark= the index under study e.g. "Russel_1000"; "DJ"; "NASDAQ"; or
 % "SP_500". Note: the labels used shall match the labels in script "step0_dl_dsf"
-% – oos_range= the out-of-sample trading period for evaluating the performance 
+% – oos_range= the out-of-sample trading period for evaluating the performance
 
 %% Outputs
 
@@ -25,14 +25,14 @@
 clear;clc;warning off;
 init_knockoffs;
 IS_per=10;
-Benchmark='Russel_1000';
+Benchmark='DJ';
 goal='var';
 funda_factors={'mkvalt','bkvlps','ni','gp','at','epspx','ebitda',...
     'txt','prcc_f','roe','dte','ebitts'};
-filter_rule='btm'; % Any of the above, 'btm', 'etm', or 'roe' as ratios 
+filter_rule='btm'; % Any of the above, 'btm', 'etm', or 'roe' as ratios
 % of BPS/P, EPS/P, or return on equity
 
-filter_count=50; 
+filter_count=50;
 funda_tbl=readtable('funda.csv');
 funda_tbl.roe=funda_tbl.ni./funda_tbl.seq;
 funda_tbl.dte=funda_tbl.lt./funda_tbl.seq;
@@ -74,20 +74,14 @@ for yr=yr_rng
         asset_info_IS(s,:).gvkey=select_gvkey;
         asset_info_IS(s,:).LastPrice=prc_mat_IS(end,s);
         %asset_info_IS{s,'sic'}=company_table.sic(company_table.gvkey==select_gvkey);
-        idx_funda=find(all([funda_tbl.fyear>=yr-2,...
-            funda_tbl.fyear<yr,...
-                funda_tbl.gvkey==select_gvkey'],2));
+        idx_funda=find(all([funda_tbl.fyear==yr-2,...
+            funda_tbl.gvkey==select_gvkey'],2),1,'last');
         
         if numel(idx_funda)>0
-           elibile_idx=find(any([funda_tbl.fyear(idx_funda)==yr-2,...
-               datenum(funda_tbl.filedate(idx_funda))<=...
-               datenum(yr-1,12,31)],2),1,'last');
-           if numel(elibile_idx)
-                asset_info_IS_add(s,:)=funda_tbl(idx_funda(elibile_idx),...
-                    funda_factors);
-           end
+            asset_info_IS_add(s,:)=funda_tbl(idx_funda,...
+                funda_factors);
         end
-
+        
     end
     asset_info_IS=[asset_info_IS,asset_info_IS_add];
     asset_info_IS.btm=asset_info_IS.bkvlps./asset_info_IS.LastPrice;
@@ -114,7 +108,7 @@ for yr=yr_rng
             opt_set=S;
         else
             fdr_level=fdr_level+.05;
-        end 
+        end
     end
     X_opt=X_train(:,opt_set);
     opt_knockoff_set=eligible_stocks(opt_set,:);
@@ -125,7 +119,7 @@ for yr=yr_rng
         retention_knockoff=0;
     end
     port0_knockoff=opt_knockoff_set{:,1}';
-
+    
     %% Optimize knockoffs
     %err_fun=@(w) (mean((X_opt*w'-Y_train).^2))^.5;
     w_0=ones(1,size(X_opt,2))/size(X_opt,2);
@@ -312,7 +306,7 @@ for yr=yr_rng
     results_table{end,'knockoff_ew_OOS_sharpe'}=oos_knockoff_port_ew_sharpe_excess;
     results_table{end,'knockoff_ew_OOS_sharpe'}=oos_knockoff_port_cw_sharpe_excess;
     results_table{end,'knockoff_reduced_OOS_sharpe'}=oos_reduced_port_sharpe_excess;
-    toc;  
+    toc;
 end
 
 fprintf(['Mean excess annualized return for ' Benchmark ' is %g%% vs %g%% for knockoff vs %g%% for knockoff-reduced \n'],...
@@ -324,7 +318,7 @@ fprintf('Mean excess annualized return for knockoff-EW is %g%% vs %g%% for EW-kn
     round(100*mean(results_table.knockoff_ew_reduced_OOS_ret),2))
 
 
-writetable(results_table,['Results_top' num2str(filter_count) '_' Benchmark '_' filter_rule '_' goal '_a.csv']);
+writetable(results_table,['Results_top' num2str(filter_count) '_' Benchmark '_' filter_rule '_' goal '.csv']);
 figure,
 ser_banch=100*[1;cumprod(1+results_table{:,[Benchmark,'_OOS_ret']})];
 knockoff_Ser=100*[1;cumprod(1+results_table{:,'knockoff_OOS_ret'})];
