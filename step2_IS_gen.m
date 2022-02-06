@@ -26,7 +26,7 @@
 clear;clc;warning off;
 IS_per=10;
 benchmark_list={'DJ','SP_500','NASDAQ','Russel_1000'};
-oos_range=1996:2021;
+oos_range=1996:year(now);
 r_f_fl_name='Fed_Funds_FRB.csv';
 r_f_tbl=readtable(r_f_fl_name);
 r_f_tbl.Properties.VariableNames={'date','FF_O'};

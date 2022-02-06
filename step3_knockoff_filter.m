@@ -18,7 +18,7 @@
 
 %% Credits
 % Code developed by Arman Hassanniakalager GitHub @hkalager
-% Last reviewed 28 January 2022.
+% Last reviewed 06 February 2022.
 
 %% Main codes
 
@@ -27,11 +27,16 @@ init_knockoffs;
 IS_per=10;
 Benchmark='Russel_1000';
 goal='var';
-funda_factors={'mkvalt','bkvlps','ni','gp','at','epspx','ebitda','txt','prcc_f'};
-filter_rule='btm'; % Any of the above or 'btm' or 'etm' as ratios of BPS/P or EPS/P 
+funda_factors={'mkvalt','bkvlps','ni','gp','at','epspx','ebitda',...
+    'txt','prcc_f','roe','dte','ebitts'};
+filter_rule='btm'; % Any of the above, 'btm', 'etm', or 'roe' as ratios 
+% of BPS/P, EPS/P, or return on equity
 
 filter_count=50; 
 funda_tbl=readtable('funda.csv');
+funda_tbl.roe=funda_tbl.ni./funda_tbl.seq;
+funda_tbl.dte=funda_tbl.lt./funda_tbl.seq;
+funda_tbl.ebitts=funda_tbl.ebit./funda_tbl.sale;
 company_table=readtable('company_data.csv');
 %sic_table=readtable('sic_codes.csv');
 r_f_fl_name='Fed_Funds_FRB.csv';
@@ -41,34 +46,50 @@ dsf_tbl=readtable('dsf_hdr');
 results_table=table();
 port0_knockoff=[];
 port0_reduced=[];
-yr_rng=1996:2020;
+yr_rng=1996:2021;
 for yr=yr_rng
     tic;
     load(['dataset_',num2str(yr),'_IS_',num2str(IS_per),'_',Benchmark]);
     Bench_IS_ret=(1+mean(bench_excess_ret,'omitnan'))^52-1;
     asset_info_IS=[table(stock_list_IS),asset_info_IS];
     asset_info_IS.Properties.VariableNames{1}='permno';
+    gvkey=zeros(size(asset_info_IS,1),1);
+    LastPrice=zeros(size(asset_info_IS,1),1);
+    asset_info_IS=[asset_info_IS,table(gvkey,LastPrice)];
+    asset_info_IS_add=table();
+    for s=1:numel(funda_factors)
+        varname=funda_factors{s};
+        asset_info_IS_add=[asset_info_IS_add,table(zeros(size(asset_info_IS,1),1),...
+            'VariableNames',funda_factors(s))];
+    end
     
-    for s=1:size(asset_info_IS,1)
-        asset_permno=asset_info_IS.permno(s);
+    parfor s=1:size(asset_info_IS,1)
+        asset_permno=asset_info_IS(s,:).permno;
         select_gvkey=unique(curr_tbl1.gvkey(find(curr_tbl1.permno==asset_permno)));
         if numel(select_gvkey)>1
             count_statements=sum(funda_tbl.gvkey==select_gvkey');
             select_gvkey=select_gvkey(count_statements==max(count_statements));
             select_gvkey=select_gvkey(1);
         end
-        asset_info_IS{s,'gvkey'}=select_gvkey;
-        asset_info_IS{s,'LastPrice'}=prc_mat_IS(end,s);
+        asset_info_IS(s,:).gvkey=select_gvkey;
+        asset_info_IS(s,:).LastPrice=prc_mat_IS(end,s);
         %asset_info_IS{s,'sic'}=company_table.sic(company_table.gvkey==select_gvkey);
-        idx_funda=find(all([funda_tbl.fyear<=yr-1,...
-            year(funda_tbl.datadate)<=yr-1,...
-                funda_tbl.gvkey==select_gvkey'],2),1,'last');
+        idx_funda=find(all([funda_tbl.fyear>=yr-2,...
+            funda_tbl.fyear<yr,...
+                funda_tbl.gvkey==select_gvkey'],2));
         
         if numel(idx_funda)>0
-            asset_info_IS(s,funda_factors)=funda_tbl(idx_funda,funda_factors);
+           elibile_idx=find(any([funda_tbl.fyear(idx_funda)==yr-2,...
+               datenum(funda_tbl.filedate(idx_funda))<=...
+               datenum(yr-1,12,31)],2),1,'last');
+           if numel(elibile_idx)
+                asset_info_IS_add(s,:)=funda_tbl(idx_funda(elibile_idx),...
+                    funda_factors);
+           end
         end
 
     end
+    asset_info_IS=[asset_info_IS,asset_info_IS_add];
     asset_info_IS.btm=asset_info_IS.bkvlps./asset_info_IS.LastPrice;
     asset_info_IS.etm=asset_info_IS.epspx./asset_info_IS.LastPrice;
     shrinkage_merge=sum(asset_info_IS.mkvalt==0)/size(asset_info_IS,1);
@@ -104,8 +125,7 @@ for yr=yr_rng
         retention_knockoff=0;
     end
     port0_knockoff=opt_knockoff_set{:,1}';
-    
-    
+
     %% Optimize knockoffs
     %err_fun=@(w) (mean((X_opt*w'-Y_train).^2))^.5;
     w_0=ones(1,size(X_opt,2))/size(X_opt,2);
@@ -269,8 +289,8 @@ for yr=yr_rng
     %% write to the table
     
     results_table{end+1,'Year'}=yr;
-    results_table{end,'Cap_threshold_M'}=measure_threshold;
-    results_table{end,'Count_Qualifid_LCap'}=size(eligible_stocks,1);
+    results_table{end,[filter_rule,'_threshold']}=round(measure_threshold,2);
+    results_table{end,['Count_Qualifid_',filter_rule]}=size(eligible_stocks,1);
     results_table{end,'Count_knockoff'}=size(opt_knockoff_set,1);
     results_table{end,'Count_knockoff_reduced'}=size(knockoff_set_reduced,1);
     results_table{end,'Retention_knockoff'}=retention_knockoff;
@@ -304,7 +324,7 @@ fprintf('Mean excess annualized return for knockoff-EW is %g%% vs %g%% for EW-kn
     round(100*mean(results_table.knockoff_ew_reduced_OOS_ret),2))
 
 
-writetable(results_table,['Results_top' num2str(filter_count) '_' Benchmark '_' filter_rule '_' goal '.csv']);
+writetable(results_table,['Results_top' num2str(filter_count) '_' Benchmark '_' filter_rule '_' goal '_a.csv']);
 figure,
 ser_banch=100*[1;cumprod(1+results_table{:,[Benchmark,'_OOS_ret']})];
 knockoff_Ser=100*[1;cumprod(1+results_table{:,'knockoff_OOS_ret'})];
