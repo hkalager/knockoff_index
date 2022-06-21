@@ -13,11 +13,11 @@ For enquiries and commercial use, please get in touch via hassannia@outlook.com
 
 # Replication:
 
-In order to replicate the results you need to run the m files in MATLAB. The steps are identified in file names as "step0_XXX.m", "step1_XXX.m" et cetra. Each file is accompanied by the necessary guidance within the script. In the current format, you need to set the benchmarks for each porfolios seperately. After running the script named "step3_XX.m" you'll get a figure comparing the benchmark excess return vs the knockoff portfolios. 
+In order to replicate the results you need to run the m files in MATLAB. The steps are identified in file names as `step0_XXX.m`, `step1_XXX.m` et cetra. Each file is accompanied by the necessary guidance within the script. In the current format, you need to set the benchmarks for each porfolios seperately. After running the script named `step3_XX.m` you'll get a figure comparing the benchmark excess return vs the knockoff portfolios. 
 
 # Dataset:
 
-– The daily stock data used in this study is from CRSP on WRDS. Once you acquire the account from WRDS you need to enter your username and password into the script "step0_dl_dsf.m" to start collecting the data. 
+– The daily stock data used in this study is from CRSP on WRDS. Once you acquire the account from WRDS you need to enter your username and password into the script `step0_dl_dsf.m` to start collecting the data. 
 
 – The annual fundamentals are from merged Compustat/CRSP file on WRDS. 
 
