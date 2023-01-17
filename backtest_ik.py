@@ -8,7 +8,7 @@ Created on Sun Sep 11 13:00:10 2022
 from datetime import datetime
 from invest_knockoff import invest_knockoff as ik
 
-base_fun=ik(study_range=range(2001,2022),verbose=True)
+base_fun=ik(study_range=range(2002,2022),verbose=True)
 my_freq_sel='weekly'
 approach_set=['value', 'growth']
 count_top_set=[100]
